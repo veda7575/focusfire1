@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFire - Productivity Timer</title>
+    <style>
+        :root {
+            --primary-red: #ff0033;
+            --neon-red: #ff1744;
+            --dark-red: #b71c1c;
+            --matrix-red: #ff002b;
+            --black: #000000;
+            --dark-space: #0a0a0a;
+            --carbon: #1a1a1a;
+            --metal: #2a2a2a;
+            --chrome: #e6e6e6;
+            --pure-white: #ffffff;
+            --chrome-yellow: #ffd700;
+            --neon-yellow: #fff000;
+            --electric-blue: #00e5ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+            min-height: 100vh;
+            color: var(--chrome);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            gap: 20px;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #262626 100%);
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .app-header h1 {
+            color: var(--primary-red);
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, var(--primary-red), #ff3366);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .streak-counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--chrome);
+            font-size: 1.1rem;
+            background: rgba(255, 0, 51, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #333;
+        }
+
+        .streak-icon {
+            font-size: 1.4rem;
+            color: var(--primary-red);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 60% 40%;
+            gap: 25px;
+            flex: 1;
+        }
+
+        .timer-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #262626 100%);
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid #333;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .timer-display {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .timer-circle {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary-red) 0%, #2a2a2a 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 
+                0 8px 32px rgba(255, 0, 51, 0.2),
+                inset 0 4px 12px rgba(178, 3, 3, 0.8);
+            margin: 0 auto 30px;
+            border: 3px solid #333;
+        }
+
+        .timer-circle:before {
+            content: '';
+            position: absolute;
+            width: 290px;
+            height: 290px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.8);
+            border: 2px solid #444;
+        }
+
+        .timer-progress {
+            position: relative;
+            z-index: 1;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: var(--pure-white);
+            border: 1px solid var(--dark-red);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--dark-red), #7f1d1d);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            color: var(--chrome);
+            border: 1px solid #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #4b5563, #6b7280);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--chrome-yellow), #ffed4a);
+            color: var(--black);
+            border: 1px solid var(--chrome-yellow);
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #ffed4a, var(--chrome-yellow));
+            transform: translateY(-2px);
+        }
+
+        .session-selector {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .session-btn {
+            padding: 12px 20px;
+            border: 1px solid #444;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--chrome);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .session-btn.active {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: var(--pure-white);
+            border: 1px solid var(--dark-red);
+        }
+
+        .session-btn:hover:not(.active) {
+            background: linear-gradient(135deg, #374151, #2a2a2a);
+            border-color: #666;
+        }
+
+        .features-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 97.5%;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #262626 100%);
+            padding: 50px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 20px;
+            color: var(--primary-red);
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .blocker-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        #site-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: #2a2a2a;
+            color: var(--chrome);
+        }
+
+        #site-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+
+        #add-site {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .blocked-list {
+            max-height: 120px;
+            overflow-y: auto;
+            width: 100%;
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 8px;
+            border: 1px solid #444;
+        }
+
+        .blocked-site {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 5px;
+            background: #333;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            width: 100%;
+            border: 1px solid #444;
+            color: var(--chrome);
+        }
+
+        .remove-site {
+            background: none;
+            border: none;
+            color: var(--primary-red);
+            cursor: pointer;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .remove-site:hover {
+            background: var(--primary-red);
+            color: var(--black);
+        }
+
+        .sound-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .sound-btn {
+            padding: 12px 8px;
+            border: 1px solid #444;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            color: var(--chrome);
+        }
+
+        .sound-btn.active {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: var(--pure-white);
+            border: 1px solid var(--dark-red);
+        }
+
+        .sound-btn:hover:not(.active) {
+            background: linear-gradient(135deg, #374151, #2a2a2a);
+            border-color: #666;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border-radius: 6px;
+            border: 1px solid #444;
+            color: var(--chrome);
+            margin-top: 10px;
+        }
+
+        #volume {
+            flex: 1;
+            accent-color: var(--primary-red);
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        .emergency-section {
+            background: linear-gradient(135deg, #332200 0%, #443300 100%);
+            text-align: center;
+            width: 100%;
+            padding: 50px;
+            border-radius: 12px;
+            border: 1px solid var(--chrome-yellow);
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2);
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .emergency-section h3 {
+            margin-bottom: 15px;
+            color: var(--chrome-yellow);
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .emergency-section p {
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--chrome-yellow);
+            font-weight: 500;
+        }
+
+        .emergency-timer {
+            padding: 12px;
+            background: var(--chrome-yellow);
+            color: var(--black);
+            border-radius: 6px;
+            font-weight: 600;
+            width: 100%;
+            font-size: 1rem;
+            border: 1px solid #ffed4a;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #262626 100%);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid #333;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            margin-top: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px 15px;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: var(--chrome);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1200px) {
+            .timer-circle {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .timer-circle:before {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .timer-progress {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-panel {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+            }
+            
+            .timer-circle {
+                width: 260px;
+                height: 260px;
+            }
+            
+            .timer-circle:before {
+                width: 230px;
+                height: 230px;
+            }
+            
+            .timer-progress {
+                font-size: 2.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .app-header h1 {
+                font-size: 2rem;
+            }
+            
+            .timer-section {
+                padding: 30px 20px;
+            }
+            
+            .timer-circle {
+                width: 240px;
+                height: 240px;
+            }
+            
+            .timer-circle:before {
+                width: 210px;
+                height: 210px;
+            }
+            
+            .timer-progress {
+                font-size: 2.5rem;
+            }
+            
+            .timer-controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .btn {
+                width: 200px;
+                padding: 12px 24px;
+            }
+            
+            .session-selector {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .session-btn {
+                width: 200px;
+            }
+            
+            .sound-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .blocker-controls {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .streak-counter {
+                font-size: 1rem;
+                padding: 6px 12px;
+            }
+            
+            .timer-section {
+                padding: 20px 15px;
+            }
+            
+            .feature-card, .emergency-section {
+                padding: 20px;
+            }
+            
+            .timer-circle {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .timer-circle:before {
+                width: 170px;
+                height: 170px;
+            }
+            
+            .timer-progress {
+                font-size: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .timer-complete {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .blocked-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .blocked-list::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+
+        .blocked-list::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 3px;
+        }
+
+        .blocked-list::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-red);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>🔥 FocusFire</h1>
+            <div class="streak-counter">
+                <span class="streak-icon">🔥</span>
+                <span id="streak-count">0</span> day streak
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="timer-section">
+                <div class="timer-display">
+                    <div class="timer-circle">
+                        <div class="timer-progress">
+                            <span id="timer-display">25:00</span>
+                        </div>
+                    </div>
+                    <div class="timer-controls">
+                        <button id="start-btn" class="btn btn-primary">Start Focus</button>
+                        <button id="pause-btn" class="btn btn-secondary" disabled>Pause</button>
+                        <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                    </div>
+                </div>
+
+                <div class="session-selector">
+                    <button class="session-btn active" data-minutes="25">Focus (25m)</button>
+                    <button class="session-btn" data-minutes="5">Break (5m)</button>
+                    <button class="session-btn" data-minutes="15">Long Break (15m)</button>
+                </div>
+            </section>
+
+            <section class="features-panel">
+        
+                <div class="feature-card">
+                    <h3>🛡️ Website Blocker</h3>
+                    <div class="blocker-controls">
+                        <input type="text" id="site-input" placeholder="Enter website to block">
+                        <button id="add-site" class="btn btn-danger">Block Site</button>
+                    </div>
+                    <div id="blocked-sites" class="blocked-list"></div>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🎵 Focus Sounds</h3>
+                    <div class="sound-grid">
+                        <button class="sound-btn" data-sound="rain">🌧️ Rain</button>
+                        <button class="sound-btn" data-sound="fire">🔥 Fireplace</button>
+                        <button class="sound-btn" data-sound="coffee">☕ Coffee Shop</button>
+                        <button class="sound-btn" data-sound="white">⚪ White Noise</button>
+                    </div>
+                    <div class="volume-control">
+                        <label>Volume:</label>
+                        <input type="range" id="volume" min="0" max="100" value="50">
+                    </div>
+                </div>
+
+                <div class="feature-card emergency-section">
+                    <h3>🚨 Emergency Break</h3>
+                    <p>Need immediate access? Take a 5-minute break</p>
+                    <button id="emergency-btn" class="btn btn-warning">Emergency Break</button>
+                    <div id="emergency-timer" class="emergency-timer hidden">
+                        <span id="emergency-time">5:00</span> until focus resumes
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="sessions-today">0</span>
+                    <span class="stat-label">Sessions Today</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="total-focus">0</span>
+                    <span class="stat-label">Total Focus Minutes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="emergencies-used">0</span>
+                    <span class="stat-label">Emergencies Used</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        class FocusTimer {
+            constructor() {
+                this.timerDuration = 25 * 60;
+                this.timeLeft = this.timerDuration;
+                this.isRunning = false;
+                this.isBreak = false;
+                this.interval = null;
+                this.blockedSites = JSON.parse(localStorage.getItem('blockedSites')) || [];
+                this.stats = JSON.parse(localStorage.getItem('focusStats')) || this.initializeStats();
+                this.currentSound = null;
+                this.emergencyMode = false;
+                
+                this.audioContext = null;
+                this.sounds = {};
+                
+                this.initializeElements();
+                this.initializeAudio();
+                this.loadSavedData();
+                this.updateDisplay();
+                this.setupEventListeners();
+            }
+
+            initializeStats() {
+                return {
+                    sessionsCompleted: 0,
+                    totalFocusMinutes: 0,
+                    emergenciesUsed: 0,
+                    currentStreak: 0,
+                    lastSessionDate: null
+                };
+            }
+
+            initializeElements() {
+                this.timerDisplay = document.getElementById('timer-display');
+                this.startBtn = document.getElementById('start-btn');
+                this.pauseBtn = document.getElementById('pause-btn');
+                this.resetBtn = document.getElementById('reset-btn');
+                this.sessionBtns = document.querySelectorAll('.session-btn');
+                
+                this.siteInput = document.getElementById('site-input');
+                this.addSiteBtn = document.getElementById('add-site');
+                this.blockedSitesList = document.getElementById('blocked-sites');
+                
+                this.soundBtns = document.querySelectorAll('.sound-btn');
+                this.volumeSlider = document.getElementById('volume');
+                
+                this.emergencyBtn = document.getElementById('emergency-btn');
+                this.emergencyTimer = document.getElementById('emergency-timer');
+                this.emergencyTimeDisplay = document.getElementById('emergency-time');
+                
+                this.streakCount = document.getElementById('streak-count');
+                this.sessionsToday = document.getElementById('sessions-today');
+                this.totalFocus = document.getElementById('total-focus');
+                this.emergenciesUsed = document.getElementById('emergencies-used');
+                
+                this.timerCircle = document.querySelector('.timer-circle');
+            }
+
+            initializeAudio() {
+                const initAudio = () => {
+                    if (!this.audioContext) {
+                        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        this.createAllSounds();
+                    }
+                };
+                
+                document.addEventListener('click', initAudio, { once: true });
+                document.addEventListener('touchstart', initAudio, { once: true });
+                document.addEventListener('keydown', initAudio, { once: true });
+            }
+
+            createAllSounds() {
+                this.sounds.rain = this.createBrownNoise();
+                this.sounds.fire = this.createFireSound();
+                this.sounds.coffee = this.createCoffeeShopSound();
+                this.sounds.white = this.createWhiteNoise();
+            }
+
+            createBrownNoise() {
+                const bufferSize = 4096;
+                const noise = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
+                let lastOut = 0.0;
+                
+                noise.onaudioprocess = function(e) {
+                    const output = e.outputBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        const white = Math.random() * 2 - 1;
+                        output[i] = (lastOut + (0.02 * white)) / 1.02;
+                        lastOut = output[i];
+                        output[i] *= 0.5;
+                    }
+                };
+                
+                const gainNode = this.audioContext.createGain();
+                gainNode.gain.value = 0;
+                noise.connect(gainNode);
+                
+                return { source: noise, gain: gainNode };
+            }
+
+            createFireSound() {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.value = 80;
+                
+                const lfo = this.audioContext.createOscillator();
+                const lfoGain = this.audioContext.createGain();
+                lfo.frequency.value = 2;
+                lfoGain.gain.value = 30;
+                
+                lfo.connect(lfoGain);
+                lfoGain.connect(oscillator.frequency);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.start();
+                lfo.start();
+                gainNode.gain.value = 0;
+                
+                return { source: oscillator, gain: gainNode, lfo: lfo };
+            }
+
+            createCoffeeShopSound() {
+                const oscillators = [];
+                const gains = [];
+                
+                for (let i = 0; i < 3; i++) {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 200 + (i * 100);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    oscillator.start();
+                    gainNode.gain.value = 0;
+                    
+                    oscillators.push(oscillator);
+                    gains.push(gainNode);
+                }
+                
+                return { sources: oscillators, gains: gains };
+            }
+
+            createWhiteNoise() {
+                const bufferSize = 4096;
+                const noise = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
+                
+                noise.onaudioprocess = function(e) {
+                    const output = e.outputBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                };
+                
+                const gainNode = this.audioContext.createGain();
+                gainNode.gain.value = 0;
+                noise.connect(gainNode);
+                
+                return { source: noise, gain: gainNode };
+            }
+
+            setupEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startTimer());
+                this.pauseBtn.addEventListener('click', () => this.pauseTimer());
+                this.resetBtn.addEventListener('click', () => this.resetTimer());
+                
+                this.sessionBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.sessionBtns.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.setTimerDuration(parseInt(e.target.dataset.minutes));
+                    });
+                });
+                
+                this.addSiteBtn.addEventListener('click', () => this.addSiteToBlocklist());
+                this.siteInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addSiteToBlocklist();
+                });
+                
+                this.soundBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.toggleSound(e.target.dataset.sound));
+                });
+                
+                this.volumeSlider.addEventListener('input', (e) => {
+                    this.setVolume(e.target.value / 100);
+                });
+                
+                this.emergencyBtn.addEventListener('click', () => this.startEmergencyBreak());
+            }
+
+            setTimerDuration(minutes) {
+                this.timerDuration = minutes * 60;
+                this.timeLeft = this.timerDuration;
+                this.updateDisplay();
+            }
+
+            startTimer() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.startBtn.disabled = true;
+                this.pauseBtn.disabled = false;
+                
+                this.interval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.completeTimer();
+                    }
+                }, 1000);
+            }
+
+            pauseTimer() {
+                this.isRunning = false;
+                this.startBtn.disabled = false;
+                this.pauseBtn.disabled = true;
+                clearInterval(this.interval);
+            }
+
+            resetTimer() {
+                this.pauseTimer();
+                this.timeLeft = this.timerDuration;
+                this.updateDisplay();
+                this.timerCircle.classList.remove('timer-complete');
+            }
+
+            completeTimer() {
+                this.pauseTimer();
+                this.playCompletionSound();
+                this.timerCircle.classList.add('timer-complete');
+                
+                this.stats.sessionsCompleted++;
+                this.stats.totalFocusMinutes += this.timerDuration / 60;
+                this.updateStreak();
+                this.saveStats();
+                this.updateStatsDisplay();
+                
+                setTimeout(() => {
+                    alert('Timer complete! Great job focusing! 🎉');
+                    this.timerCircle.classList.remove('timer-complete');
+                }, 100);
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                this.timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                const progress = ((this.timerDuration - this.timeLeft) / this.timerDuration) * 100;
+                this.timerCircle.style.background = `conic-gradient(var(--primary-red) ${progress}%, #2a2a2a ${progress}%)`;
+            }
+
+            toggleSound(soundType) {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.createAllSounds();
+                }
+                
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                
+                this.soundBtns.forEach(btn => btn.classList.remove('active'));
+                
+                if (this.currentSound === soundType) {
+                    this.stopAllSounds();
+                    this.currentSound = null;
+                    return;
+                }
+                
+                this.stopAllSounds();
+                
+                this.currentSound = soundType;
+                const volume = this.volumeSlider.value / 100;
+                
+                switch(soundType) {
+                    case 'rain':
+                        this.sounds.rain.gain.connect(this.audioContext.destination);
+                        this.sounds.rain.gain.gain.value = volume * 0.3;
+                        break;
+                    case 'fire':
+                        this.sounds.fire.gain.gain.value = volume * 0.2;
+                        break;
+                    case 'coffee':
+                        this.sounds.coffee.gains.forEach(gain => {
+                            gain.gain.value = volume * 0.1;
+                        });
+                        break;
+                    case 'white':
+                        this.sounds.white.gain.connect(this.audioContext.destination);
+                        this.sounds.white.gain.gain.value = volume * 0.2;
+                        break;
+                }
+                
+                event.target.classList.add('active');
+            }
+
+            stopAllSounds() {
+                if (this.sounds.rain) {
+                    this.sounds.rain.gain.gain.value = 0;
+                    this.sounds.rain.gain.disconnect();
+                }
+                if (this.sounds.fire) {
+                    this.sounds.fire.gain.gain.value = 0;
+                }
+                if (this.sounds.coffee) {
+                    this.sounds.coffee.gains.forEach(gain => {
+                        gain.gain.value = 0;
+                    });
+                }
+                if (this.sounds.white) {
+                    this.sounds.white.gain.gain.value = 0;
+                    this.sounds.white.gain.disconnect();
+                }
+            }
+
+            setVolume(volume) {
+                if (this.currentSound && this.sounds[this.currentSound]) {
+                    switch(this.currentSound) {
+                        case 'rain':
+                            this.sounds.rain.gain.gain.value = volume * 0.3;
+                            break;
+                        case 'fire':
+                            this.sounds.fire.gain.gain.value = volume * 0.2;
+                            break;
+                        case 'coffee':
+                            this.sounds.coffee.gains.forEach(gain => {
+                                gain.gain.value = volume * 0.1;
+                            });
+                            break;
+                        case 'white':
+                            this.sounds.white.gain.gain.value = volume * 0.2;
+                            break;
+                    }
+                }
+            }
+
+            playCompletionSound() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.3);
+                
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 300);
+            }
+
+            addSiteToBlocklist() {
+                const site = this.siteInput.value.trim().toLowerCase();
+                if (!site) return;
+                
+                if (!this.blockedSites.includes(site)) {
+                    this.blockedSites.push(site);
+                    this.saveBlockedSites();
+                    this.updateBlockedSitesList();
+                    this.siteInput.value = '';
+                }
+            }
+
+            removeSiteFromBlocklist(site) {
+                this.blockedSites = this.blockedSites.filter(s => s !== site);
+                this.saveBlockedSites();
+                this.updateBlockedSitesList();
+            }
+
+            updateBlockedSitesList() {
+                this.blockedSitesList.innerHTML = '';
+                this.blockedSites.forEach(site => {
+                    const siteElement = document.createElement('div');
+                    siteElement.className = 'blocked-site';
+                    siteElement.innerHTML = `
+                        <span>${site}</span>
+                        <button class="remove-site" onclick="focusTimer.removeSiteFromBlocklist('${site}')">×</button>
+                    `;
+                    this.blockedSitesList.appendChild(siteElement);
+                });
+            }
+
+            startEmergencyBreak() {
+                if (this.emergencyMode) return;
+                
+                this.emergencyMode = true;
+                this.stats.emergenciesUsed++;
+                this.saveStats();
+                this.updateStatsDisplay();
+                
+                this.pauseTimer();
+                this.emergencyTimer.classList.remove('hidden');
+                
+                let emergencyTime = 5 * 60;
+                const emergencyInterval = setInterval(() => {
+                    const minutes = Math.floor(emergencyTime / 60);
+                    const seconds = emergencyTime % 60;
+                    this.emergencyTimeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    emergencyTime--;
+                    
+                    if (emergencyTime < 0) {
+                        clearInterval(emergencyInterval);
+                        this.endEmergencyBreak();
+                    }
+                }, 1000);
+            }
+
+            endEmergencyBreak() {
+                this.emergencyMode = false;
+                this.emergencyTimer.classList.add('hidden');
+                alert('Emergency break over! Time to get back to work! 🔥');
+            }
+
+            updateStreak() {
+                const today = new Date().toDateString();
+                const lastSession = this.stats.lastSessionDate;
+                
+                if (lastSession === today) return;
+                
+                if (!lastSession || this.isConsecutiveDay(lastSession)) {
+                    this.stats.currentStreak++;
+                } else {
+                    this.stats.currentStreak = 1;
+                }
+                
+                this.stats.lastSessionDate = today;
+            }
+
+            isConsecutiveDay(lastDate) {
+                const last = new Date(lastDate);
+                const today = new Date();
+                const diffTime = today - last;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays === 1;
+            }
+
+            updateStatsDisplay() {
+                this.streakCount.textContent = this.stats.currentStreak;
+                this.sessionsToday.textContent = this.stats.sessionsCompleted;
+                this.totalFocus.textContent = Math.floor(this.stats.totalFocusMinutes);
+                this.emergenciesUsed.textContent = this.stats.emergenciesUsed;
+            }
+
+            saveBlockedSites() {
+                localStorage.setItem('blockedSites', JSON.stringify(this.blockedSites));
+            }
+
+            saveStats() {
+                localStorage.setItem('focusStats', JSON.stringify(this.stats));
+            }
+
+            loadSavedData() {
+                this.updateBlockedSitesList();
+                this.updateStatsDisplay();
+            }
+        }
+
+        // Initialize the timer when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.focusTimer = new FocusTimer();
+        });
+    </script>
+</body>
+</html>
